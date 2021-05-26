@@ -9,7 +9,11 @@
 
 
 using namespace std;
-
+int posD1Inicio =0;
+int posD2Inicio =0;
+int posD1Atual =0;
+int posD2Atual =0;
+int tamTabuCorrente = 0;
 //estrutura para armazenar as informações dos itens
 struct tipoItem
 {
@@ -240,135 +244,7 @@ void solucaoInicial(tipoSolucao &s,tipoItem itens[])
 }
 
 //avalia a vizinhança de uma solução e retorna true se encontrou um vizinho melhor.
-bool avaliaVizinhanca(tipoSolucao &s, tipoItem itens[], int d)
-{
-    int i,j, pos1=-1, pos2=-1, posd1=-1;
-    float mValor=s.valor, mPeso=s.peso;
-    float peso_aux, valor_aux,peso_aux2, valor_aux2;
-    bool melhorou=false;
-
-    switch(d)
-    {
-    case 1:
-        for(i=0; i<s.n; i++)
-        {
-            if(s.item[i]==0)
-            {
-                peso_aux=s.peso+itens[i].peso;
-                valor_aux=s.valor+itens[i].valor;
-            }
-            else
-            {
-                peso_aux=s.peso-itens[i].peso;
-                valor_aux=s.valor-itens[i].valor;
-            }
-            if(peso_aux<=s.capacidade && valor_aux>mValor)
-                //if(peso_aux<=s.capacidade && valor_aux-mValor>0.01)
-            {
-                pos1=i;
-                mValor=valor_aux;
-                mPeso=peso_aux;
-            }
-        }
-        if(pos1!=-1)
-        {
-            s.item[pos1]= (s.item[pos1]+1)%2;
-            s.valor=mValor;
-            s.peso=mPeso;
-            return true;
-        }
-        return false;
-        break;
-
-    case 2:
-        //d=1
-        for(i=0; i<s.n; i++)
-        {
-            if(s.item[i]==0)
-            {
-                peso_aux=s.peso+itens[i].peso;
-                valor_aux=s.valor+itens[i].valor;
-            }
-            else
-            {
-                peso_aux=s.peso-itens[i].peso;
-                valor_aux=s.valor-itens[i].valor;
-            }
-            if(peso_aux<=s.capacidade && valor_aux>mValor)
-            {
-                posd1=i;
-                mValor=valor_aux;
-                mPeso=peso_aux;
-
-            }
-        }
-        if(posd1!=-1)
-        {
-            melhorou=true;
-        }
-
-        //d=2
-        for(i=0; i<s.n-1; i++)
-        {
-            if(s.item[i]==0)
-            {
-                peso_aux=s.peso+itens[i].peso;
-                valor_aux=s.valor+itens[i].valor;
-            }
-            else
-            {
-                peso_aux=s.peso-itens[i].peso;
-                valor_aux=s.valor-itens[i].valor;
-            }
-
-            for(j=i+1; j<s.n; j++)
-            {
-
-                if(s.item[j]==0)
-                {
-                    peso_aux2=peso_aux+itens[j].peso;
-                    valor_aux2=valor_aux+itens[j].valor;
-                }
-                else
-                {
-                    peso_aux2=peso_aux-itens[j].peso;
-                    valor_aux2=valor_aux-itens[j].valor;
-                }
-
-                if(peso_aux2<=s.capacidade && valor_aux2>mValor)
-                {
-                    pos1=i;
-                    pos2=j;
-                    mValor=valor_aux2;
-                    mPeso=peso_aux2;
-                }
-            }
-
-        }
-        if(pos1!=-1)
-        {
-            s.item[pos1]=(s.item[pos1]+1)%2;
-            s.item[pos2]=(s.item[pos2]+1)%2;
-            s.valor=mValor;
-            s.peso=mPeso;
-            return true;
-        }
-        if(melhorou)
-        {
-            s.item[posd1]= (s.item[posd1]+1)%2;
-            s.valor=mValor;
-            s.peso=mPeso;
-            return true;
-        }
-        return false;
-        break;
-
-    }
-    return false;
-}
-
-
-bool avaliaVizinhancaTabu(tipoSolucao &s, tipoItem itens[], int d, int *tabu,int it, float melhor)
+bool avaliaVizinhancaTabu(tipoSolucao &s, tipoItem itens[], int d, int *tabu,int *posD1,int *posD2,int it, float melhor)
 {
     int i,j, pos1=-1, pos2=-1, posd1=-1;
     float mValor=0, mPeso=0;
@@ -406,12 +282,50 @@ bool avaliaVizinhancaTabu(tipoSolucao &s, tipoItem itens[], int d, int *tabu,int
             s.peso=mPeso;
 
             tabu[pos1]=it+10; //4 tempo tabu
+
+            posD1[posD1Inicio] = pos1;
             return true;
         }
-        return false; //implementar aspiração default
+        else
+        {
+            for(i=0; i<s.n; i++)
+            {
+                if(s.item[i]==0)
+                {
+                    peso_aux=s.peso+itens[i].peso;
+                    valor_aux=s.valor+itens[i].valor;
+                }
+                else
+                {
+                    peso_aux=s.peso-itens[i].peso;
+                    valor_aux=s.valor-itens[i].valor;
+                }
+                if(peso_aux<=s.capacidade && valor_aux>mValor)
+                {
+                    pos1=i;
+                    mValor=valor_aux;
+                    mPeso=peso_aux;
+                }
+            }
+
+            s.item[pos1]= (s.item[pos1]+1)%2;
+            s.valor=mValor;
+            s.peso=mPeso;
+
+            tabu[posD1[posD1Inicio]] = it+10;
+            posD1[posD1Inicio] = pos1;
+            posD1Inicio++;
+
+
+            if(posD1Inicio == s.n-1)
+            {
+                posD1Inicio = 0;
+            }
+        }
+        //return false; //implementar aspiração default
         break;
 
-     case 2:
+    case 2:
         //d=1
         for(i=0; i<s.n; i++)
         {
@@ -466,7 +380,7 @@ bool avaliaVizinhancaTabu(tipoSolucao &s, tipoItem itens[], int d, int *tabu,int
                     valor_aux2=valor_aux-itens[j].valor;
                 }
 
-                if(peso_aux2<=s.capacidade && valor_aux2>mValor && ((tabu[j]<it)||(valor_aux2>melhor)))
+                if(peso_aux2<=s.capacidade && valor_aux2>mValor && (((tabu[i]<it)&&(tabu[j]<it))||(valor_aux2>melhor)))
                 {
                     pos1=i;
                     pos2=j;
@@ -484,7 +398,77 @@ bool avaliaVizinhancaTabu(tipoSolucao &s, tipoItem itens[], int d, int *tabu,int
             s.peso=mPeso;
             tabu[pos1]=it+10; //4 tempo tabu
             tabu[pos2]=it+10; //4 tempo tabu
+            posD1[posD1Inicio] = pos1;
+            posD2[posD2Inicio] = pos2;
+
             return true;
+
+        }
+        else
+        {
+            for(i=0; i<s.n-1; i++)
+            {
+                if(s.item[i]==0)
+                {
+                    peso_aux=s.peso+itens[i].peso;
+                    valor_aux=s.valor+itens[i].valor;
+                }
+                else
+                {
+                    peso_aux=s.peso-itens[i].peso;
+                    valor_aux=s.valor-itens[i].valor;
+                }
+
+                for(j=i+1; j<s.n; j++)
+                {
+
+                    if(s.item[j]==0)
+                    {
+                        peso_aux2=peso_aux+itens[j].peso;
+                        valor_aux2=valor_aux+itens[j].valor;
+                    }
+                    else
+                    {
+                        peso_aux2=peso_aux-itens[j].peso;
+                        valor_aux2=valor_aux-itens[j].valor;
+                    }
+
+                    if(peso_aux2<=s.capacidade && valor_aux2>mValor)
+                    {
+                        pos1=i;
+                        pos2=j;
+                        mValor=valor_aux2;
+                        mPeso=peso_aux2;
+                    }
+                }
+                s.item[pos1]=(s.item[pos1]+1)%2;
+                s.item[pos2]=(s.item[pos2]+1)%2;
+                s.valor=mValor;
+                s.peso=mPeso;
+                tabu[pos1]=it+10; //4 tempo tabu
+                tabu[pos2]=it+10; //4 tempo tabu
+
+
+                tabu[posD1[posD1Inicio]] = it+10;
+                posD1[posD1Inicio] = pos1;
+                posD1Inicio++;
+                if(posD1Inicio == s.n-1)
+                {
+                    posD1Inicio = 0;
+                }
+
+                tabu[posD2[posD2Inicio]] = it+10;
+                posD2[posD2Inicio] = pos2;
+                posD2Inicio++;
+                if(posD2Inicio == s.n-1)
+                {
+                    posD2Inicio = 0;
+                }
+
+                return true;
+
+
+            }
         }
         if(melhorou)
         {
@@ -492,300 +476,49 @@ bool avaliaVizinhancaTabu(tipoSolucao &s, tipoItem itens[], int d, int *tabu,int
             s.valor=mValor;
             s.peso=mPeso;
             tabu[posd1]=it+10; //4 tempo tabu
+            posD1[posD1Inicio] = posd1;
             return true;
         }
-        return false;
-        break;
-
-    }
-    return false;
-}
-
-
-void buscaLocal(tipoSolucao &s, tipoItem itens[], char nome[])
-{
-
-    bool teste=true;
-    int d=2;//distancia
-    int i=0;
-
-    /*-------------------Usado para criar o arquivo de saída--------------------------*/
-    ofstream fout;
-    char nomearq[100];
-
-    strcpy(nomearq,nome);
-    strcat(nomearq,"_saida.txt");
-    fout.open(nomearq);
-    if(!fout.is_open())
-    {
-        cout<<"Erro ao criar o arquivo saida.txt"<<endl;
-        exit(0);
-    }
-    fout<<nome<<"\n";
-    fout<<s.otimo<<"\n";
-    /*--------------------------------------------------------------------------------*/
-
-    solucaoInicial(s,itens);
-    imprimeSolucao(s,itens);
-
-    fout<<i<<" "<<s.valor<<"\n"; //gravando a solução inicial
-
-    while(teste)
-    {
-        teste=avaliaVizinhanca(s,itens,d);
-        if(teste)
+        else
         {
-            i++;
-            imprimeSolucao(s,itens);
-            fout<<i<<" "<<s.valor<<"\n"; //gravando a solução atual
-        }
-
-    }
-    fout.close(); //fechar o arquivo de saída
-}
-
-
-bool avaliaVizinhancaPenalizada(tipoSolucao &s, tipoItem itens[], int d, float lambda, int p[], int k)
-{
-    int i,j, pos1=-1, pos2=-1, posd1=-1;
-    float mValor, mPeso=s.peso;
-    float peso_aux, valor_aux,peso_aux2, valor_aux2;
-    bool melhorou=false;
-
-    float pen=0,pen_aux;
-    // for(i=0;i<s.n;i++)
-    //{
-    //    pen=pen+p[i]*s.item[i];
-    // }
-    //s.valor=s.valor-lambda*pen;
-    s.valor=s.valor- (lambda*p[k]);
-    mValor=s.valor;
-
-    switch(d)
-    {
-    case 1:
-        for(i=0; i<s.n; i++)
-        {
-            if(s.item[i]==0)
+            for(i=0; i<s.n; i++)
             {
-                peso_aux=s.peso+itens[i].peso;
-                valor_aux=s.valor+itens[i].valor - (lambda*p[i]);
-            }
-            else
-            {
-                peso_aux=s.peso-itens[i].peso;
-                valor_aux=s.valor-itens[i].valor + (lambda*p[i]);
-            }
-            if(peso_aux<=s.capacidade && valor_aux>mValor)
-                //if(peso_aux<=s.capacidade && valor_aux-mValor>0.01)
-            {
-                pos1=i;
-                mValor=valor_aux;
-                mPeso=peso_aux;
-            }
-        }
-        if(pos1!=-1)
-        {
-            s.item[pos1]= (s.item[pos1]+1)%2;
-            s.valor=mValor;
-            s.peso=mPeso;
-            return true;
-        }
-        return false;
-        break;
-
-    case 2:
-        //d=1
-        for(i=0; i<s.n; i++)
-        {
-            if(s.item[i]==0)
-            {
-                peso_aux=s.peso+itens[i].peso;
-                valor_aux=s.valor+itens[i].valor- (lambda*p[i]);
-            }
-            else
-            {
-                peso_aux=s.peso-itens[i].peso;
-                valor_aux=s.valor-itens[i].valor+ (lambda*p[i]);
-            }
-            if(peso_aux<=s.capacidade && valor_aux>mValor)
-            {
-                posd1=i;
-                mValor=valor_aux;
-                mPeso=peso_aux;
-
-            }
-        }
-        if(posd1!=-1)
-        {
-            melhorou=true;
-        }
-
-        //d=2
-        for(i=0; i<s.n-1; i++)
-        {
-            if(s.item[i]==0)
-            {
-                peso_aux=s.peso+itens[i].peso;
-                valor_aux=s.valor+itens[i].valor- (lambda*p[i]);
-            }
-            else
-            {
-                peso_aux=s.peso-itens[i].peso;
-                valor_aux=s.valor-itens[i].valor+ (lambda*p[i]);
-            }
-
-            for(j=i+1; j<s.n; j++)
-            {
-
-                if(s.item[j]==0)
+                if(s.item[i]==0)
                 {
-                    peso_aux2=peso_aux+itens[j].peso;
-                    valor_aux2=valor_aux+itens[j].valor- (lambda*p[j]);
+                    peso_aux=s.peso+itens[i].peso;
+                    valor_aux=s.valor+itens[i].valor;
                 }
                 else
                 {
-                    peso_aux2=peso_aux-itens[j].peso;
-                    valor_aux2=valor_aux-itens[j].valor+ (lambda*p[j]);
+                    peso_aux=s.peso-itens[i].peso;
+                    valor_aux=s.valor-itens[i].valor;
                 }
-
-                if(peso_aux2<=s.capacidade && valor_aux2>mValor)
+                if(peso_aux<=s.capacidade && valor_aux>mValor)
                 {
                     pos1=i;
-                    pos2=j;
-                    mValor=valor_aux2;
-                    mPeso=peso_aux2;
+                    mValor=valor_aux;
+                    mPeso=peso_aux;
                 }
             }
 
-        }
-        if(pos1!=-1)
-        {
-            s.item[pos1]=(s.item[pos1]+1)%2;
-            s.item[pos2]=(s.item[pos2]+1)%2;
+            s.item[pos1]= (s.item[pos1]+1)%2;
             s.valor=mValor;
             s.peso=mPeso;
+
+            tabu[posD1[posD1Inicio]] = it+10;
+            posD1[posD1Inicio] = pos1;
+            posD1Inicio++;
+            if(posD1Inicio == s.n-1)
+            {
+                posD1Inicio = 0;
+            }
             return true;
         }
-        if(melhorou)
-        {
-            s.item[posd1]= (s.item[posd1]+1)%2;
-            s.valor=mValor;
-            s.peso=mPeso;
-            return true;
-        }
-        return false;
+
         break;
 
     }
     return false;
-}
-
-
-void buscaLocalPenalizada(tipoSolucao &s, tipoItem itens[], char nome[], float lambda, int p[], int k)
-{
-
-    bool teste=true;
-    int d=2;//distancia
-    int i=0;
-
-    while(teste)
-    {
-        teste=avaliaVizinhancaPenalizada(s,itens,d, lambda, p, k);
-        if(teste)
-            i++;
-    }
-
-}
-
-int maxPos(float u[], int n)
-{
-    float max=u[0];
-    int p=0;
-
-    for(int i=1; i<n; i++)
-    {
-        if(u[i]>max)
-        {
-            max=u[i];
-            p=i;
-        }
-    }
-    return p;
-
-}
-
-void buscaLocalGuiada(tipoSolucao &s, tipoItem itens[], char nome[])
-{
-
-    bool teste=true;
-    int d=2;//distancia
-    int i=0;
-    float *u= new float[s.n];
-    float *c= new float[s.n];
-    int *p= new int[s.n];
-
-
-    for(i=0; i<s.n; i++)
-    {
-        p[i]=0;
-        c[i]=itens[i].valor/itens[i].peso;
-    }
-
-    /*-------------------Usado para criar o arquivo de saída--------------------------*/
-    ofstream fout;
-    char nomearq[100];
-
-    strcpy(nomearq,nome);
-    strcat(nomearq,"_saida.txt");
-    fout.open(nomearq);
-    if(!fout.is_open())
-    {
-        cout<<"Erro ao criar o arquivo saida.txt"<<endl;
-        exit(0);
-    }
-    fout<<nome<<"\n";
-    fout<<s.otimo<<"\n";
-    /*--------------------------------------------------------------------------------*/
-
-    solucaoInicial(s,itens);
-    imprimeSolucao(s,itens);
-
-    i=0;
-    fout<<i<<" "<<s.valor<<"\n"; //gravando a solução inicial
-
-    int j=0;
-
-    float lambda=s.valor/2;
-    float aux;
-    for(i=1; i<30; i++)
-    {
-        buscaLocalPenalizada(s, itens,nome,lambda, p, j);
-        imprimeSolucao(s,itens);
-
-        //recalculando FO sem penalização
-        aux=0;
-        for(int k=0; k<s.n; k++)
-            aux=aux+s.item[k]*itens[k].valor;
-
-        fout<<i<<" "<<aux<<"\n"; //gravando a solução atual sem penalização
-        cout<<"FO: "<<aux<<endl;
-
-        for(j=0; j<s.n; j++)
-            u[j]=s.item[j]*c[j]/(1+p[j]);
-
-        j=maxPos(u,s.n);
-        p[j]=p[j]+1;
-
-        //if(i==50)
-        for(int k=0; k<s.n; k++)
-            cout<<p[k]<<" ";
-        cout<<endl;
-        for(int k=0; k<s.n; k++)
-            cout<<s.item[k]<<" ";
-
-    }
-    fout.close(); //fechar o arquivo de saída
 }
 
 
@@ -796,6 +529,8 @@ void buscaTabu(tipoSolucao &s, tipoItem itens[], char nome[])
     int d=2;//distancia
     int i=0;
     int *tabu= new int[s.n];
+    int *posD1= new int[s.n];
+    int *posD2= new int[s.n];
     tipoSolucao smelhor;
 
     cout<<"Iniciando busca Tabu";
@@ -803,56 +538,74 @@ void buscaTabu(tipoSolucao &s, tipoItem itens[], char nome[])
     criaSolucao(smelhor,s.n,s.capacidade,s.otimo);
 
     for(int j=0; j<s.n; j++)
+    {
         tabu[j]=0;
-
-    /*-------------------Usado para criar o arquivo de saída--------------------------*/
-    ofstream fout;
-    char nomearq[100];
-
-    strcpy(nomearq,nome);
-    strcat(nomearq,"_saida.txt");
-    fout.open(nomearq);
-    if(!fout.is_open())
-    {
-        cout<<"Erro ao criar o arquivo saida.txt"<<endl;
-        exit(0);
+        posD1[j]=0;
+        posD2[j]=0;
     }
-    fout<<nome<<"\n";
-    fout<<s.otimo<<"\n";
-    /*--------------------------------------------------------------------------------*/
 
-    solucaoInicial(s,itens);
-    atribuiSolucao(smelhor,s);
-
-    imprimeSolucao(s,itens);
-
-
-
-    fout<<i<<" "<<s.valor<<"\n"; //gravando a solução inicial
-
-    while(i<300 && teste==true)
-    {
-
-        i++;
-        cout<<"Iteracao: "<<i<<endl;
-
-        teste=avaliaVizinhancaTabu(s,itens,d,tabu,i,smelhor.valor);
-        if(teste)
+    ofstream fout;
+    ofstream fout_exe;
+    char nomearq[100];
+    char nomearqmedia[100];
+    strcpy(nomearqmedia,nome);
+    fout_exe.open(strcat(nomearqmedia,"_media.txt"));
+      if(!fout_exe.is_open())
         {
+            cout<<"Erro ao criar o arquivo media.txt"<<endl;
+            exit(0);
+        }
+    fout_exe<<nome<<"\n";
+    fout_exe<<s.otimo<<"\n";
+
+
+    for(int k = 1; k<=30; k++)
+    {
+        i = 1;
+        /*-------------------Usado para criar o arquivo de saída--------------------------*/
+        strcpy(nomearq,nome);
+        strcat(nomearq,"_saida.txt");
+        fout.open(nomearq);
+        if(!fout.is_open())
+        {
+            cout<<"Erro ao criar o arquivo saida.txt"<<endl;
+            exit(0);
+        }
+        fout<<nome<<"\n";
+        fout<<s.otimo<<"\n";
+        /*--------------------------------------------------------------------------------*/
+
+        solucaoInicial(s,itens);
+        atribuiSolucao(smelhor,s);
+
+        imprimeSolucao(s,itens);
+
+        fout<<i<<" "<<s.valor<<"\n"; //gravando a solução inicial
+
+        while(i<=400)
+        {
+
             i++;
-            imprimeSolucao(s,itens);
+            //cout<<"Iteracao: "<<i<<endl;
+
+            teste=avaliaVizinhancaTabu(s,itens,d,tabu,posD1, posD2,i,smelhor.valor);
+            if(teste)
+            {
+                imprimeSolucao(s,itens);
+            }
             fout<<i<<" "<<s.valor<<"\n"; //gravando a solução atual
             if(s.valor>smelhor.valor)
                 atribuiSolucao(smelhor,s);
+
         }
-
+        fout_exe<<k<<" "<<s.valor<<"\n";
+        fout.close();
+        atribuiSolucao(s,smelhor);
     }
-    fout.close(); //fechar o arquivo de saída
-    atribuiSolucao(s,smelhor);
+    fout_exe.close();
+    //atribuiSolucao(s,smelhor);
+
 }
-
-
-
 
 int main()
 {
