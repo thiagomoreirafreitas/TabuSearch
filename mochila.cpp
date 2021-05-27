@@ -11,8 +11,7 @@
 using namespace std;
 int posD1Inicio =0;
 int posD2Inicio =0;
-int posD1Atual =0;
-int posD2Atual =0;
+
 int tamTabuCorrente = 0;
 //estrutura para armazenar as informações dos itens
 struct tipoItem
@@ -176,13 +175,13 @@ void carregaDados(tipoItem **itens, float &capacidade,int &n,float &otimo, char 
 //imprime o vetor com os itens
 void imprimeItens(tipoItem itens[], int n)
 {
-    for(int i=0; i<n; i++)
-    {
-        cout<<"Item "<<setw(4)<<i+1;
-        cout<<"   |  Peso: "<<setw(5) <<itens[i].peso;
-        cout<<"   |  Valor: "<<setw(5) <<itens[i].valor<<endl;
-    }
-    cout<<endl;
+//    for(int i=0; i<n; i++)
+//    {
+//        cout<<"Item "<<setw(4)<<i+1;
+//        cout<<"   |  Peso: "<<setw(5) <<itens[i].peso;
+//        cout<<"   |  Valor: "<<setw(5) <<itens[i].valor<<endl;
+//    }
+//    cout<<endl;
 }
 
 //imprime os dados de uma solução
@@ -196,20 +195,20 @@ void imprimeSolucao( tipoSolucao s,tipoItem itens[] )
     cout<<"Valor Atual: "<<s.valor<<endl;
     cout<<"Peso Atual: "<<s.peso<<endl<<endl;
 
-    cout<<"Escolhidos:\n";
-    int cont=0;
-    for(int i=0; i<s.n; i++)
-    {
-        if(s.item[i]==1)
-        {
-            cont++;
-            cout<<"Item "<<setw(4)<<i+1;
-            cout<<"   |  Peso: "<<setw(5) <<itens[i].peso;
-            cout<<"   |  Valor: "<<setw(5) <<itens[i].valor<<endl;
-        }
-    }
-
-    cout<<"Itens escolhidos: "<<cont<<endl<<endl;
+//    cout<<"Escolhidos:\n";
+//    int cont=0;
+//    for(int i=0; i<s.n; i++)
+//    {
+//        if(s.item[i]==1)
+//        {
+//            cont++;
+//            cout<<"Item "<<setw(4)<<i+1;
+//            cout<<"   |  Peso: "<<setw(5) <<itens[i].peso;
+//            cout<<"   |  Valor: "<<setw(5) <<itens[i].valor<<endl;
+//        }
+//    }
+//
+//    cout<<"Itens escolhidos: "<<cont<<endl<<endl;
     cout<<endl;
 }
 
@@ -564,7 +563,7 @@ void buscaTabu(tipoSolucao &s, tipoItem itens[], char nome[])
     fout_exe<<s.otimo<<"\n";
 
 
-    for(int k = 1; k<=1; k++)
+    for(int k = 1; k<=30; k++)
     {
         i = 1;
         /*-------------------Usado para criar o arquivo de saída--------------------------*/
