@@ -197,11 +197,15 @@ void imprimeSolucao( tipoSolucao s,tipoItem itens[] )
 
 //    cout<<"Escolhidos:\n";
 //    int cont=0;
+//    int peso = 0;
+//    int valor = 0;
 //    for(int i=0; i<s.n; i++)
 //    {
 //        if(s.item[i]==1)
 //        {
 //            cont++;
+//            peso+=itens[i].peso;
+//            valor+=itens[i].valor;
 //            cout<<"Item "<<setw(4)<<i+1;
 //            cout<<"   |  Peso: "<<setw(5) <<itens[i].peso;
 //            cout<<"   |  Valor: "<<setw(5) <<itens[i].valor<<endl;
@@ -209,7 +213,9 @@ void imprimeSolucao( tipoSolucao s,tipoItem itens[] )
 //    }
 //
 //    cout<<"Itens escolhidos: "<<cont<<endl<<endl;
-    cout<<endl;
+//    cout<<"Peso Total: "<<peso<<endl<<endl;
+//    cout<<"Valor Total: "<<valor<<endl<<endl;
+//    cout<<endl;
 }
 
 //cria uma solução aleatória
@@ -290,6 +296,8 @@ bool avaliaVizinhancaTabu(tipoSolucao &s, tipoItem itens[], int d, int *tabu,int
         {
             peso_aux = 0;
             valor_aux = 0;
+            mValor=0;
+            mPeso=0;
             for(i=0; i<s.n; i++)
             {
                 if(s.item[i]==0)
@@ -330,6 +338,10 @@ bool avaliaVizinhancaTabu(tipoSolucao &s, tipoItem itens[], int d, int *tabu,int
 
     case 2:
         //d=1
+         peso_aux = 0;
+            valor_aux = 0;
+            mValor=0;
+            mPeso=0;
         for(i=0; i<s.n; i++)
         {
             if(s.item[i]==0)
@@ -411,6 +423,8 @@ bool avaliaVizinhancaTabu(tipoSolucao &s, tipoItem itens[], int d, int *tabu,int
         {
             peso_aux = 0;
             valor_aux = 0;
+            mValor=0;
+            mPeso=0;
             for(i=0; i<s.n-1; i++)
             {
                 if(s.item[i]==0)
@@ -447,30 +461,30 @@ bool avaliaVizinhancaTabu(tipoSolucao &s, tipoItem itens[], int d, int *tabu,int
                     }
                 }
             }
-                s.item[pos1]=(s.item[pos1]+1)%2;
-                s.item[pos2]=(s.item[pos2]+1)%2;
-                s.valor=mValor;
-                s.peso=mPeso;
-                tabu[pos1]=it+10; //4 tempo tabu
-                tabu[pos2]=it+10; //4 tempo tabu
+            s.item[pos1]=(s.item[pos1]+1)%2;
+            s.item[pos2]=(s.item[pos2]+1)%2;
+            s.valor=mValor;
+            s.peso=mPeso;
+            tabu[pos1]=it+10; //4 tempo tabu
+            tabu[pos2]=it+10; //4 tempo tabu
 
 
-                tabu[posD1[posD1Inicio]] = it+10;
-                posD1[posD1Inicio] = pos1;
-                posD1Inicio++;
-                if(posD1Inicio == s.n-1)
-                {
-                    posD1Inicio = 0;
-                }
+            tabu[posD1[posD1Inicio]] = it+10;
+            posD1[posD1Inicio] = pos1;
+            posD1Inicio++;
+            if(posD1Inicio == s.n-1)
+            {
+                posD1Inicio = 0;
+            }
 
-                tabu[posD2[posD2Inicio]] = it+tempoTabu;
-                posD2[posD2Inicio] = pos2;
-                posD2Inicio++;
-                if(posD2Inicio == s.n-1)
-                {
-                    posD2Inicio = 0;
-                }
-              return true;
+            tabu[posD2[posD2Inicio]] = it+tempoTabu;
+            posD2[posD2Inicio] = pos2;
+            posD2Inicio++;
+            if(posD2Inicio == s.n-1)
+            {
+                posD2Inicio = 0;
+            }
+            return true;
         }
         if(melhorou)
         {
@@ -526,16 +540,17 @@ bool avaliaVizinhancaTabu(tipoSolucao &s, tipoItem itens[], int d, int *tabu,int
 }
 
 
-void buscaTabu(tipoSolucao &s, tipoItem itens[], char nome[])
+double buscaTabu(tipoSolucao &s, tipoItem itens[], char nome[])
 {
 
     bool teste=true;
     int d=2;//distancia
-    int i=0;
+    int i=1;
     int *tabu= new int[s.n];
     int *posD1= new int[s.n];
     int *posD2= new int[s.n];
     tipoSolucao smelhor;
+    double acumulador = 0;
 
     cout<<"Iniciando busca Tabu";
 
@@ -549,64 +564,51 @@ void buscaTabu(tipoSolucao &s, tipoItem itens[], char nome[])
     }
 
     ofstream fout;
-    ofstream fout_exe;
+
     char nomearq[100];
-    char nomearqmedia[100];
-    strcpy(nomearqmedia,nome);
-    fout_exe.open(strcat(nomearqmedia,"_media.txt"));
-      if(!fout_exe.is_open())
-        {
-            cout<<"Erro ao criar o arquivo media.txt"<<endl;
-            exit(0);
-        }
-    fout_exe<<nome<<"\n";
-    fout_exe<<s.otimo<<"\n";
 
 
-    for(int k = 1; k<=30; k++)
+
+    /*-------------------Usado para criar o arquivo de saída--------------------------*/
+    strcpy(nomearq,nome);
+    strcat(nomearq,"_saida.txt");
+    fout.open(nomearq);
+    if(!fout.is_open())
     {
-        i = 1;
-        /*-------------------Usado para criar o arquivo de saída--------------------------*/
-        strcpy(nomearq,nome);
-        strcat(nomearq,"_saida.txt");
-        fout.open(nomearq);
-        if(!fout.is_open())
-        {
-            cout<<"Erro ao criar o arquivo saida.txt"<<endl;
-            exit(0);
-        }
-        fout<<nome<<"\n";
-        fout<<s.otimo<<"\n";
-        /*--------------------------------------------------------------------------------*/
-
-        solucaoInicial(s,itens);
-        atribuiSolucao(smelhor,s);
-
-        imprimeSolucao(s,itens);
-
-        fout<<i<<" "<<s.valor<<"\n"; //gravando a solução inicial
-
-        while(i<=1000)
-        {
-
-            i++;
-            //cout<<"Iteracao: "<<i<<endl;
-
-            teste=avaliaVizinhancaTabu(s,itens,d,tabu,posD1, posD2,i,smelhor.valor);
-            if(teste)
-            {
-                imprimeSolucao(s,itens);
-            }
-            fout<<i<<" "<<s.valor<<"\n"; //gravando a solução atual
-            if(s.valor>smelhor.valor)
-                atribuiSolucao(smelhor,s);
-
-        }
-        fout_exe<<k<<" "<<s.valor<<"\n";
-        fout.close();
-        atribuiSolucao(s,smelhor);
+        cout<<"Erro ao criar o arquivo saida.txt"<<endl;
+        exit(0);
     }
-    fout_exe.close();
+    fout<<nome<<"\n";
+    fout<<s.otimo<<"\n";
+    /*--------------------------------------------------------------------------------*/
+
+    solucaoInicial(s,itens);
+    atribuiSolucao(smelhor,s);
+
+    imprimeSolucao(s,itens);
+
+    fout<<i<<" "<<s.valor<<"\n"; //gravando a solução inicial
+
+    while(i<=1000)
+    {
+
+        i++;
+        //cout<<"Iteracao: "<<i<<endl;
+
+        teste=avaliaVizinhancaTabu(s,itens,d,tabu,posD1, posD2,i,smelhor.valor);
+        if(teste)
+        {
+            imprimeSolucao(s,itens);
+        }
+        fout<<i<<" "<<s.valor<<"\n"; //gravando a solução atual
+        if(s.valor>smelhor.valor)
+            atribuiSolucao(smelhor,s);
+        acumulador+=s.valor;
+    }
+
+    fout.close();
+    atribuiSolucao(s,smelhor);
+    return acumulador;
     //atribuiSolucao(s,smelhor);
 
 }
@@ -619,6 +621,9 @@ int main()
     int n;
     tipoSolucao sOtima;
     char nome[100];
+    ofstream fout_exe;
+    string media = "media_";
+    double acumulado;
 
     //criando a semente dos números aleatório
     unsigned seed = 1; //time(NULL);
@@ -628,24 +633,37 @@ int main()
     carregaDados(&itens,capacidade,n,otimo,nome);
     //imprimeItens(itens,n);
 
-    //cria a solução (zera e aloca o vetor binário)
-    criaSolucao(sOtima,n,capacidade,otimo);
+    media = media+(string)nome+".txt";
+    fout_exe.open(media);
+    if(!fout_exe.is_open())
+    {
+        cout<<"Erro ao criar o arquivo saida.txt"<<endl;
+        exit(0);
+    }
+    fout_exe<<nome<<"\n";
+    fout_exe<<otimo<<"\n";
+    for(int k=1; k<=30; k++)
+    {
+        //cria a solução (zera e aloca o vetor binário)
+        criaSolucao(sOtima,n,capacidade,otimo);
 
-    //função de otimização
-    buscaTabu(sOtima, itens,nome);
+        //função de otimização
+        acumulado = buscaTabu(sOtima, itens,nome);
 
-    //melhor solução
-    cout<<"\n\n Melhor Solucao:";
-    imprimeSolucao(sOtima,itens);
+        //melhor solução
+        cout<<"\n\n Melhor Solucao:";
+        imprimeSolucao(sOtima,itens);
 
+        fout_exe<<k<<" "<<acumulado/1000<<"\n";
 
-
-    cout<<"Arquivo de saida criado: "<<nome<<"_saida.txt";
-
+        cout<<"Arquivo de saida criado: "<<nome<<"_saida.txt";
+    }
     //apaga o vetor binário criado de forma dinâmica
     apagaSolucao(sOtima);
 
     //apaga o vetor de itens;
     delete itens;
+    fout_exe.close();
+    memset(nome, 0, 100);
     return 0;
 }
